@@ -14,7 +14,7 @@
 		<div class="col-md-4">
 			<div class="single-products">
 				<div class="productinfo text-center">
-					<img src='uploads/<s:property value="productImg" />' />
+					<img src='uploads?productIdImage=<s:property value="productID" />' />
 					<h2>
 						<s:property value="productPrice" />
 					</h2>

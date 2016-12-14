@@ -1,14 +1,12 @@
 package servlet;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -16,6 +14,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+
+import dao.ProductDAOImpl;
+import model.Product;
 
 @WebServlet(name = "uploads", urlPatterns = { "/uploads/*" })
 @MultipartConfig
@@ -27,83 +28,35 @@ public class Uploads extends HttpServlet {
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		PrintWriter out = response.getWriter();
-		for (Part part : request.getParts()) {
-			InputStream is = request.getPart(part.getName()).getInputStream();
-			String fileName = getFileName(part);
-
-			/*
-			 * FileOutputStream os = new FileOutputStream(
-			 * System.getenv("OPENSHIFT_DATA_DIR") + File.separator + fileName);
-			 */
-
-			FileOutputStream os = new FileOutputStream(
-					System.getenv("OPENSHIFT_DATA_DIR") + File.separator + fileName);
-
-			System.out.println("File Path 1------------");
-			System.out.println(System.getenv("OPENSHIFT_DATA_DIR") + fileName);
-
-			byte[] bytes = new byte[BUFFER_LENGTH];
-			int read = 0;
-			while ((read = is.read(bytes, 0, BUFFER_LENGTH)) != -1) {
-				os.write(bytes, 0, read);
-			}
-			os.flush();
-			is.close();
-			os.close();
-			out.println(fileName + " was uploaded to "
-					+ System.getenv("OPENSHIFT_DATA_DIR"));
-		}
 	}
 
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		String filePath = request.getRequestURI();
 
-		/*System.out.println("Href vao----------------------");
-		System.out.println(filePath);
-		String filePathTest = System.getenv("OPENSHIFT_DATA_DIR")
-				+ filePath.replace("/mssstruts2hibernatetiles/uploads", "");
-		System.out.println("Href vao modify----------------------");
-		System.out.println(filePathTest);
-
-		File file = new File(System.getenv("OPENSHIFT_DATA_DIR")
-				+ filePath.replace("/mssstruts2hibernatetiles/uploads", ""));*/
+		System.out.println("*******************************Vao retrieve anh tu db**********************************");
 		
+		System.out.println("productIdImage: "+request.getParameter("productIdImage"));
 		
+		int productIdImage = Integer.parseInt(request.getParameter("productIdImage"));
 		
+		System.out.println(productIdImage);
 		
+		ProductDAOImpl productDAOImpl = new ProductDAOImpl();
 		
-		System.out.println("Href vao----------------------");
-		System.out.println(filePath);
-		String filePathTest = System.getenv("OPENSHIFT_DATA_DIR")
-				+ filePath.replace("/uploads", "");
-		System.out.println("Href vao modify----------------------");
-		System.out.println(filePathTest);
-
-		File file = new File(System.getenv("OPENSHIFT_DATA_DIR")
-				+ filePath.replace("/uploads", ""));
 		
 		
 
 		
-
-		InputStream input = new FileInputStream(file);
-
-		response.setContentLength((int) file.length());
-		response.setContentType(new MimetypesFileTypeMap().getContentType(file));
-
-		OutputStream output = response.getOutputStream();
-		byte[] bytes = new byte[BUFFER_LENGTH];
-		int read = 0;
-		while ((read = input.read(bytes, 0, BUFFER_LENGTH)) != -1) {
-			output.write(bytes, 0, read);
-			output.flush();
-		}
-
-		input.close();
-		output.close();
+		Product product = productDAOImpl.getProductById(productIdImage);
+        byte[] productImage = product.getProductImg();
+		
+		response.setContentType("image/gif");
+		OutputStream out = response.getOutputStream();
+		out.write(productImage); // image is of byte[] type.
+		out.flush();
+		out.close();
+		
 	}
 
 	private String getFileName(Part part) {

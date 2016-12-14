@@ -48,7 +48,7 @@
 											<td><s:property value="productName" /></td>
 											<td><s:property value="productDesc" /></td>
 											<!-- <td><img src=<s:property value="productImg" /> /></td> -->
-											<td><img src='uploads/<s:property value="productImg" />'
+											<td><img src='uploads?productIdImage=<s:property value="productID" />'
 												style="display: block;" width="30%" height="30%" /></td>
 											<td><s:property value="productPrice" /></td>
 											<td><s:property value="category.categoryName" /></td>
@@ -137,14 +137,11 @@
 
 									<div class="form-group">
 										<label>Hình ảnh</label>
-										<textarea class="form-control" rows="3" name="productImg"><s:property
-												value="product.productImg" /></textarea>
+										<s:file name="productImg" label="Product Image" />
 
 									</div>
 
-									<div>
-										<s:file name="userImage" label="User Image" />
-									</div>
+
 									<div class="form-group">
 										<label>Giá cả</label>
 										<textarea class="form-control" rows="3" name="productPrice"><s:property

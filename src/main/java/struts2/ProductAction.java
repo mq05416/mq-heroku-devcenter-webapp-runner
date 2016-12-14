@@ -1,21 +1,19 @@
 package struts2;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
-
-import model.Category;
-import model.Product;
 
 import com.opensymphony.xwork2.ActionSupport;
 
 import dao.CategoryDAOImpl;
 import dao.ProductDAOImpl;
+import model.Category;
+import model.Product;
 
 public class ProductAction extends ActionSupport implements ServletRequestAware {
 
@@ -31,14 +29,13 @@ public class ProductAction extends ActionSupport implements ServletRequestAware 
 	private int productID;
 	private String productName;
 	private String productDesc;
-	private String productImg;
+	private File productImg;
 	private double productPrice;
 
 	private Product product;
 
-	private File userImage;
-	private String userImageContentType;
-	private String userImageFileName;
+	
+	
 
 	private HttpServletRequest servletRequest;
 
@@ -73,46 +70,33 @@ public class ProductAction extends ActionSupport implements ServletRequestAware 
 		System.out.println(productDesc);
 		System.out.println(productImg);
 		System.out.println(productPrice);
-
-		ProductDAOImpl productDAOImpl = new ProductDAOImpl();
-		CategoryDAOImpl categoryDAOImpl = new CategoryDAOImpl();
-
-		categoryId = categoryDAOImpl.getCategoryIdByName(categoryName_ID);
-		category = categoryDAOImpl.getCategoryById(categoryId);
-
-		Product product = new Product(productID, productName, productDesc,
-				productImg, productPrice, category);
+		
+		byte[] bFile = new byte[(int) productImg.length()];
 
 		try {
-			/*
-			 * String filePath = servletRequest.getSession().getServletContext()
-			 * .getRealPath("/");
-			 */
-			String uploadFolder = System.getenv("OPENSHIFT_DATA_DIR");
-			/*
-			 * String filePath = servletRequest.getSession().getServletContext()
-			 * .getRealPath("/") + File.separator + uploadFolder;
-			 */
-			/*String filePath = uploadFolder;*/
-			String filePath = "uploads"; // thu muc de upload
-			System.out
-					.println("-----------Server path------------:" + filePath);
-			String fileName = System.currentTimeMillis()
-					+ this.userImageFileName;
-			File fileToCreate = new File(filePath, fileName);
-
-			FileUtils.copyFile(this.userImage, fileToCreate);
-			/* product.setProductImg(uploadFolder + File.separator + fileName); */
-			product.setProductImg(fileName);
-
-			System.out.println("----------product Image Path---------"
-					+ product.getProductImg());
+			FileInputStream fileInputStream = new FileInputStream(productImg);
+			fileInputStream.read(bFile);
+			fileInputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-			addActionError(e.getMessage());
-
-			return INPUT;
 		}
+		
+		ProductDAOImpl productDAOImpl = new ProductDAOImpl();
+		CategoryDAOImpl categoryDAOImpl = new CategoryDAOImpl();
+		categoryId = categoryDAOImpl.getCategoryIdByName(categoryName_ID);
+		category = categoryDAOImpl.getCategoryById(categoryId);
+		
+		Product product = new Product();
+		product.setProductID(productID);
+		product.setProductName(productName);
+		product.setProductDesc(productDesc);
+		product.setProductImg(bFile);
+		product.setProductPrice(productPrice);
+		product.setCategory(category);
+		
+
+		
+
 
 		productDAOImpl.addProduct(product);
 		products = productDAOImpl.getList();
@@ -170,13 +154,25 @@ public class ProductAction extends ActionSupport implements ServletRequestAware 
 
 	public String edit_product() {
 		System.out.println(productID);
+		
+		
+		// khai bao mang byte chua hinh anh
+		byte[] bFile = new byte[(int) productImg.length()];
+
+		try {
+			FileInputStream fileInputStream = new FileInputStream(productImg);
+			fileInputStream.read(bFile);
+			fileInputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		ProductDAOImpl productDAOImpl = new ProductDAOImpl();
 		CategoryDAOImpl categoryDAOImpl = new CategoryDAOImpl();
 		product = productDAOImpl.getProductById(productID);
 		product.setProductName(productName);
 		product.setProductID(productID);
 		product.setProductDesc(productDesc);
-		product.setProductDesc(productImg);
+		product.setProductImg(bFile);
 		product.setProductPrice(productPrice);
 		productDAOImpl.updateProduct(product);
 
@@ -196,8 +192,7 @@ public class ProductAction extends ActionSupport implements ServletRequestAware 
 		categories = categoryDAOImpl.getList();
 		product = productDAOImpl.getProductById(productID);
 		System.out.println("Thong so product detail: -----");
-		System.out.println(product.getProductName() + "\n"
-				+ product.getProductImg() + "\n" + product.getProductDesc());
+		System.out.println(product.getProductName() + "\n" + product.getProductImg() + "\n" + product.getProductDesc());
 		return SUCCESS;
 	}
 
@@ -257,11 +252,13 @@ public class ProductAction extends ActionSupport implements ServletRequestAware 
 		this.productDesc = productDesc;
 	}
 
-	public String getProductImg() {
+	
+
+	public File getProductImg() {
 		return productImg;
 	}
 
-	public void setProductImg(String productImg) {
+	public void setProductImg(File productImg) {
 		this.productImg = productImg;
 	}
 
@@ -305,29 +302,7 @@ public class ProductAction extends ActionSupport implements ServletRequestAware 
 		this.product = product;
 	}
 
-	public File getUserImage() {
-		return userImage;
-	}
-
-	public void setUserImage(File userImage) {
-		this.userImage = userImage;
-	}
-
-	public String getUserImageContentType() {
-		return userImageContentType;
-	}
-
-	public void setUserImageContentType(String userImageContentType) {
-		this.userImageContentType = userImageContentType;
-	}
-
-	public String getUserImageFileName() {
-		return userImageFileName;
-	}
-
-	public void setUserImageFileName(String userImageFileName) {
-		this.userImageFileName = userImageFileName;
-	}
+	
 
 	public HttpServletRequest getServletRequest() {
 		return servletRequest;
